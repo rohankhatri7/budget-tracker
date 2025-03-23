@@ -36,7 +36,7 @@ model Transaction {
   amount Float
   description String
   date DateTime //ignore timezones, use UTC to persist
-  userID String
+  userId String
   type String @default("income")
 
   category String
