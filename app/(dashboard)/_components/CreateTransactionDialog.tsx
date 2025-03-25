@@ -14,10 +14,15 @@ interface Props {
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { FormProvider } from "react-hook-form";
 import CategoryPicker from "./CategoryPicker";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
 
 function CreateTransactionDialog({ trigger, type }: Props) {
     const form = useForm<CreateTransactionSchemaType>({
@@ -27,6 +32,10 @@ function CreateTransactionDialog({ trigger, type }: Props) {
         date: new Date(),
       },
     });
+
+    const handleCategoryChange = React.useCallback((value:string) => {
+      form.setValue("category", value); 
+    }, [form])
   
     return (
       <Dialog>
@@ -86,12 +95,48 @@ function CreateTransactionDialog({ trigger, type }: Props) {
                   <FormItem>
                     <FormLabel>Category</FormLabel>
                     <FormControl>
-                      <CategoryPicker type = {type} />
+                      <CategoryPicker type = {type} onChange={handleCategoryChange}/>
                     </FormControl>
                     <FormDescription>
-                      Select category for this transaction (required)
+                      Select a category for this transaction
                     </FormDescription>
                   </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Transaction date</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button variant={"outline"} className={
+                            cn("w-[200px] px-3 text-left font-normal", 
+                              !field.value && "text-muted-foreground"
+                            )
+                          }>
+                            {field.value ? (
+                              format(field.value, "PPP")
+                            ) : (
+                              <span>Pick a date</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar mode='single' selected={field.value} onSelect={field.onChange} initialFocus />
+                      </PopoverContent>
+                    </Popover>
+                    <FormDescription>
+                      Select a date for this transaction 
+                    </FormDescription>
+                    <FormMessage  />
+                  </FormItem>
+                  //need to fix: does not consistently pop up 
                 )}
               />
               </div>

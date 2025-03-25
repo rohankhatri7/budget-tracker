@@ -1,41 +1,31 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-} from "@/components/ui/form";
+import {Dialog,DialogClose,DialogContent,DialogDescription,DialogFooter,DialogHeader,DialogTitle,DialogTrigger,} from "@/components/ui/dialog";
+import {Form,FormControl,FormDescription,FormField,FormItem,FormLabel,} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { TransactionType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { CreateCategorySchema, CreateCategorySchemaType } from "@/schema/categories";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CircleOff, PlusSquare } from "lucide-react";
-import React, { useState } from "react";
+import { CircleOff, Loader2, PlusSquare } from "lucide-react";
+import React, { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 import Picker from "@emoji-mart/react";
 import data from "@emoji-mart/data";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { CreateCategory } from "../_actions/categories";
+import { Category } from "@prisma/client";
+import { toast } from "sonner";
+import { useTheme } from "next-themes";
 
 interface Props {
   type: TransactionType;
+  successCallback: (category:Category) => void;
 }
 
-function CreateCategoryDialog({ type }: Props) {
+function CreateCategoryDialog({ type, successCallback }: Props) {
   const [open, setOpen] = useState(false);
   const form = useForm<CreateCategorySchemaType>({
     resolver: zodResolver(CreateCategorySchema),
@@ -44,10 +34,43 @@ function CreateCategoryDialog({ type }: Props) {
     },
   });
 
-  const onSubmit = (data: CreateCategorySchemaType) => {
-    console.log(data);
-    setOpen(false);
-  };
+  const queryClient = useQueryClient();
+  const theme = useTheme();
+
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: CreateCategory,
+    onSuccess: async (data: Category) => { //async since await on queryClient
+      form.reset({
+        name: "",
+        icon: "",
+        type,
+      });
+      toast.success(`Category ${data.name} created successfully 🎉`, {
+        id: "create-category",
+      });
+
+      successCallback(data);
+
+      await queryClient.invalidateQueries({
+        queryKey: ["categories"],
+      });
+      setOpen((prev) => !prev); //if dialog open, negate and set to false
+    },
+    onError: () => {
+      toast.error("Something went wrong" ,{
+        id: "create-category",
+      });
+    },
+  });
+  
+  const onSubmit = useCallback((values: CreateCategorySchemaType) => {
+    toast.loading("Creating category...", {
+      id: "create-category",
+    });  
+    mutate(values);
+  }, [mutate]); //wrap in useCallback to avoid rendering issues since using mutate
+  
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -86,10 +109,10 @@ function CreateCategoryDialog({ type }: Props) {
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input placeholder="Category" {...field} />
                   </FormControl>
                   <FormDescription>
-                    Transaction description (optional)
+                    This is how your category will appear in the app
                   </FormDescription>
                 </FormItem>
               )}
@@ -126,6 +149,7 @@ function CreateCategoryDialog({ type }: Props) {
                       </PopoverTrigger>
                       <PopoverContent className="w-full">
                         <Picker
+                          theme={theme.resolvedTheme}
                           data={data}
                           onEmojiSelect={(emoji: { native: string }) =>
                             field.onChange(emoji.native)
@@ -156,7 +180,10 @@ function CreateCategoryDialog({ type }: Props) {
               Cancel
             </Button>
           </DialogClose>
-          <Button>Save</Button>
+          <Button onClick={form.handleSubmit(onSubmit)} disabled={isPending}>
+            {!isPending && "Create"}
+            {isPending && <Loader2 className="animate-spin" />}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
