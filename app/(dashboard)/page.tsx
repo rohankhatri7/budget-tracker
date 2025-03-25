@@ -13,7 +13,7 @@ async function Page() {
 
   const userSettings = await prisma.userSettings.findUnique({
     where: {
-      userID: user.id,
+      userId: user.id,
     },
   });
 

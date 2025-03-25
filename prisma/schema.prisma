@@ -14,18 +14,18 @@ datasource db {
 }
 
 model UserSettings {
-  userID String @id
+  userId String @id
   currency String
 }
 
 model Category {
   createdAt DateTime @default(now())
   name String
-  userID String
+  userId String
   icon String
   type String @default("income")
 
-  @@unique([name, userID, type])
+  @@unique([name, userId, type])
 }
 
 model Transaction {
@@ -44,23 +44,22 @@ model Transaction {
 }
 
 model MonthHistory {
-  userID String
+  userId String
   day Int
   month Int
   year Int
   income Float
   expense Float
 
-  @@id([day, month, year, userID])
+  @@id([day, month, year, userId])
 }
 
 model YearHistory {
-  userID String
-  day Int
+  userId String
   month Int
   year Int
   income Float
   expense Float
 
-  @@id([month, year, userID])
+  @@id([month, year, userId])
 }

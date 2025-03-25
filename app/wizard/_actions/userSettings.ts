@@ -21,7 +21,7 @@ export async function UpdateUserCurrency(currency: string) {
   
     const userSettings = await prisma.userSettings.update({
       where: {
-        userID: user.id,
+        userId: user.id,
       },
       data: {
         currency,

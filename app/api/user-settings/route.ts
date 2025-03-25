@@ -12,14 +12,14 @@ export async function GET(request: Request) {
 
     let userSettings = await prisma.userSettings.findUnique({
         where: {
-            userID: user.id, 
+            userId: user.id, 
         },
     });
 
     if (!userSettings) { //set following as default settings if none saved
         userSettings = await prisma.userSettings.create({
             data: {
-                userID: user.id,
+                userId: user.id,
                 currency: "USD", 
             }
         })

@@ -23,7 +23,7 @@ export async function GET(request: Request) {
   const type = queryParams.data;
   const categories = await prisma.category.findMany({
     where: {
-      userID: user.id,
+      userId: user.id,
       ...(type && {type}), //include type in the filters if defined
     },
     orderBy: {
