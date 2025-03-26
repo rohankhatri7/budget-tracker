@@ -39,6 +39,7 @@ function StatsCards({ from, to, userSettings }: Props) {
     staleTime: 0, // Don't cache the data
     refetchOnWindowFocus: true,
     retry: 1,
+    refetchInterval: 0, // Don't automatically refetch
   })
 
   if (error) {
