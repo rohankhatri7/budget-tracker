@@ -6,7 +6,6 @@ import { UserSettings } from "@prisma/client";
 import { differenceInDays, startOfMonth } from "date-fns";
 import React, { useState } from "react";
 import { toast } from "sonner";
-// Make sure you have an import for StatsCards if it's in a separate file:
 import StatsCards from "./StatsCards";
 
 function Overview({ userSettings }: { userSettings: UserSettings }) {

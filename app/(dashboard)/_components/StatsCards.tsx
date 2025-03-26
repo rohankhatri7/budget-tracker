@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { DatetoUTCDate, GetFormatterForCurrency } from "@/lib/helpers";
 import { UserSettings } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, TrendingDown, Wallet } from "lucide-react";
 import React, { ReactNode, useCallback, useMemo } from "react";
 import CountUp from "react-countup"
 
@@ -46,6 +46,28 @@ return (
         }
       />
     </SkeletonWrapper>
+
+    <SkeletonWrapper isLoading={statsQuery.isFetching}>
+      <StatCard
+        formatter={formatter}
+        value={expense}
+        title="Expense"
+        icon={
+          <TrendingDown className="h-12 w-12 items-center rounded-lg p-2 text-rose-500 bg-rose-400/10" />
+        }
+      />
+    </SkeletonWrapper>
+
+    <SkeletonWrapper isLoading={statsQuery.isFetching}>
+      <StatCard
+        formatter={formatter}
+        value={balance}
+        title="Balance"
+        icon={
+          <Wallet className="h-12 w-12 items-center rounded-lg p-2 text-violet-500 bg-violet-400/10" />
+        }
+      />
+    </SkeletonWrapper>
   </div>
 );
 
@@ -54,38 +76,48 @@ return (
 export default StatsCards;
 
 function StatCard({
-    formatter,
-    value,
-    title,
-    icon,
-  }: {
-    formatter: Intl.NumberFormat;
-    icon: ReactNode;
-    title: string;
-    value: number;
-  }) {
-    const formatFn = useCallback(
-      (value: number) => {
-        return formatter.format(value);
-      },
-      [formatter]
-    );
-  
-    return (
-      <Card className="flex h-24 w-full items-center gap-2 p-4">
-        {icon}
-        <div className="flex flex-col items-center gap-0">
-          <p className="text-muted-foreground">{title}</p>
-          <p className="text-xl font-semibold">{formatFn(value)}</p>
-          <CountUp 
+  formatter,
+  value,
+  title,
+  icon,
+}: {
+  formatter: Intl.NumberFormat;
+  value: number;
+  title: string;
+  icon: React.ReactNode;
+}) {
+  const formatFn = useCallback(
+    (val: number) => formatter.format(val),
+    [formatter]
+  );
+
+  return (
+    <Card className="flex w-full items-center p-3 h-20 rounded-lg"> {/* Compact size */}
+      <div className="flex w-full items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="[&>svg]:h-8 [&>svg]:w-8"> {/* Medium icons */}
+            {icon}
+          </div>
+          <p className="text-base font-semibold text-gray-700">{title}</p> {/* Medium text */}
+        </div>
+        
+        <div className="pr-2"> {/* Small right padding */}
+          <CountUp
             preserveValue
             redraw={false}
             end={value}
             decimals={2}
             formattingFn={formatFn}
-            className="text-2xl"
+            className={`text-xl font-semibold ${
+              title === "Income" 
+                ? "text-emerald-600" 
+                : title === "Expense" 
+                  ? "text-rose-600" 
+                  : "text-violet-600"
+            }`}
           />
         </div>
-      </Card>
-    );
-  }
+      </div>
+    </Card>
+  );
+}
