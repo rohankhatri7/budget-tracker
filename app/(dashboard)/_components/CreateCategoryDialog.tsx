@@ -1,8 +1,24 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {Dialog,DialogClose,DialogContent,DialogDescription,DialogFooter,DialogHeader,DialogTitle,DialogTrigger,} from "@/components/ui/dialog";
-import {Form,FormControl,FormDescription,FormField,FormItem,FormLabel,} from "@/components/ui/form";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { TransactionType } from "@/lib/types";
@@ -22,10 +38,11 @@ import { useTheme } from "next-themes";
 
 interface Props {
   type: TransactionType;
-  successCallback: (category:Category) => void;
+  successCallback: (category: Category) => void;
+  className?: string;
 }
 
-function CreateCategoryDialog({ type, successCallback }: Props) {
+function CreateCategoryDialog({ type, successCallback, className }: Props) {
   const [open, setOpen] = useState(false);
   const form = useForm<CreateCategorySchemaType>({
     resolver: zodResolver(CreateCategorySchema),
@@ -37,15 +54,15 @@ function CreateCategoryDialog({ type, successCallback }: Props) {
   const queryClient = useQueryClient();
   const theme = useTheme();
 
-
   const { mutate, isPending } = useMutation({
     mutationFn: CreateCategory,
-    onSuccess: async (data: Category) => { //async since await on queryClient
+    onSuccess: async (data: Category) => {
       form.reset({
         name: "",
         icon: "",
         type,
       });
+      
       toast.success(`Category ${data.name} created successfully 🎉`, {
         id: "create-category",
       });
@@ -55,29 +72,35 @@ function CreateCategoryDialog({ type, successCallback }: Props) {
       await queryClient.invalidateQueries({
         queryKey: ["categories"],
       });
-      setOpen((prev) => !prev); //if dialog open, negate and set to false
+      
+      setOpen(false);
     },
     onError: () => {
-      toast.error("Something went wrong" ,{
+      toast.error("Something went wrong", {
         id: "create-category",
       });
     },
   });
-  
-  const onSubmit = useCallback((values: CreateCategorySchemaType) => {
-    toast.loading("Creating category...", {
-      id: "create-category",
-    });  
-    mutate(values);
-  }, [mutate]); //wrap in useCallback to avoid rendering issues since using mutate
-  
+
+  const onSubmit = useCallback(
+    (values: CreateCategorySchemaType) => {
+      toast.loading("Creating category...", {
+        id: "create-category",
+      });
+      mutate(values);
+    },
+    [mutate]
+  );
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
           variant={"ghost"}
-          className="flex border-separate items-center justify-start rounded-none border-b px-3 py-3 text-muted-foreground"
+          className={cn(
+            "flex border-separate items-center justify-start rounded-none border-b px-3 py-3 text-muted-foreground",
+            className
+          )}
         >
           <PlusSquare className="mr-2 h-4 w-4" />
           Create new
@@ -164,8 +187,6 @@ function CreateCategoryDialog({ type, successCallback }: Props) {
                 </FormItem>
               )}
             />
-            <div className="flex justify-end">
-            </div>
           </form>
         </Form>
         <DialogFooter>

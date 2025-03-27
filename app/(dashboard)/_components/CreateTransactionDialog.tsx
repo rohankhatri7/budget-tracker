@@ -233,4 +233,3 @@ function CreateTransactionDialog({ trigger, type }: Props) {
 }
 
 export default CreateTransactionDialog
-
