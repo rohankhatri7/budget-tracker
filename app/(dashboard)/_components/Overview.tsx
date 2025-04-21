@@ -7,6 +7,8 @@ import { differenceInDays, startOfMonth } from "date-fns"
 import { useState, useCallback } from "react"
 import { toast } from "sonner"
 import StatsCards from "./StatsCards"
+import CategoriesStats from "./CategoriesStats"
+import { date } from "zod"
 
 function Overview({ userSettings }: { userSettings: UserSettings }) {
   const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
@@ -57,6 +59,12 @@ function Overview({ userSettings }: { userSettings: UserSettings }) {
       </div>
       <StatsCards
         key={`stats-${dateRange.from.toISOString()}-${dateRange.to.toISOString()}-${refreshTrigger}`}
+        userSettings={userSettings}
+        from={dateRange.from}
+        to={dateRange.to}
+      />
+
+      <CategoriesStats
         userSettings={userSettings}
         from={dateRange.from}
         to={dateRange.to}

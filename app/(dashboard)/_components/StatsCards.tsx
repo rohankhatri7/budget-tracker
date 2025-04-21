@@ -36,10 +36,10 @@ function StatsCards({ from, to, userSettings }: Props) {
 
       return response.json()
     },
-    staleTime: 0, // Don't cache the data
+    staleTime: 0,
     refetchOnWindowFocus: true,
     retry: 1,
-    refetchInterval: 0, // Don't automatically refetch
+    refetchInterval: 0,
   })
 
   if (error) {
@@ -51,7 +51,7 @@ function StatsCards({ from, to, userSettings }: Props) {
   const balance = income - expense
 
   return (
-    <div className="relative flex w-full flex-wrap gap-2 md:flex-nowrap px-6">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 px-6 mb-4">
       <SkeletonWrapper isLoading={isLoading}>
         <StatCard
           formatter={formatter}

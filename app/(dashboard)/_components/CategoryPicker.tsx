@@ -71,7 +71,7 @@ function CategoryPicker({ type, onChange }: CategoryPickerProps) {
             <CommandGroup>
               {categories?.map((category: any) => (
                 <CommandItem
-                  key={category.name} // or key={category.id} if you add an ID field
+                  key={category.name}
                   value={category.name}
                   onSelect={(currentValue) => {
                     setValue(currentValue === value ? "" : currentValue)
