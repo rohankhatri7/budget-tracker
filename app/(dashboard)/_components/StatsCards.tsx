@@ -57,7 +57,7 @@ function StatsCards({ from, to, userSettings }: Props) {
           formatter={formatter}
           value={income}
           title="Income"
-          icon={<TrendingUp className="h-8 w-8 text-emerald-600" />}
+          icon={<TrendingUp className="h-12 w-12 text-emerald-600" />}
         />
       </SkeletonWrapper>
 
@@ -66,7 +66,7 @@ function StatsCards({ from, to, userSettings }: Props) {
           formatter={formatter}
           value={expense}
           title="Expense"
-          icon={<TrendingDown className="h-8 w-8 text-rose-600" />}
+          icon={<TrendingDown className="h-12 w-12 text-rose-600" />}
         />
       </SkeletonWrapper>
 
@@ -75,7 +75,7 @@ function StatsCards({ from, to, userSettings }: Props) {
           formatter={formatter}
           value={balance}
           title="Balance"
-          icon={<Wallet className="h-8 w-8 text-violet-600" />}
+          icon={<Wallet className="h-12 w-12 text-violet-600" />}
         />
       </SkeletonWrapper>
     </div>
@@ -98,20 +98,20 @@ const StatCard = ({
   const formatFn = useCallback((val: number) => formatter.format(val), [formatter])
 
   return (
-    <Card className="flex w-full items-center p-3 h-20 rounded-lg">
+    <Card className="flex w-full items-center p-4 h-28 rounded-lg">
       <div className="flex w-full items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="[&>svg]:h-8 [&>svg]:w-8">{icon}</div>
-          <p className="text-base font-semibold text-gray-700">{title}</p>
+        <div className="flex items-center gap-4">
+          <div className="[&>svg]:h-12 [&>svg]:w-12">{icon}</div>
+          <p className="text-2xl font-semibold text-white">{title}</p>
         </div>
-        <div className="pr-2">
+        <div className="pr-3">
           <CountUp
             preserveValue
             redraw={false}
             end={value}
             decimals={2}
             formattingFn={formatFn}
-            className={`text-xl font-semibold ${
+            className={`text-3xl font-semibold ${
               title === "Income" ? "text-emerald-600" : title === "Expense" ? "text-rose-600" : "text-violet-600"
             }`}
           />
