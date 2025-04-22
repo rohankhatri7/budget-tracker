@@ -37,10 +37,10 @@ function MobileNavbar() {
 
   return (
     <div className="block border-separate bg-background md:hidden">
-      <nav className="container flex items-center justify-between px-8">
+      <nav className="flex items-center justify-between">
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" className="ml-8">
               <Menu />
             </Button>
           </SheetTrigger>
@@ -69,7 +69,7 @@ function MobileNavbar() {
           <LogoMobile />
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 pr-12">
           <ThemeSwitcherBtn />
           <UserButton afterSignOutUrl="/sign-in" />
         </div>
@@ -81,8 +81,8 @@ function MobileNavbar() {
 function DesktopNavbar() {
   return (
     <div className="hidden border-separate border-b bg-background md:block">
-      <nav className="container flex items-center justify-between px-8">
-        <div className="flex h-[80px] min-h-[60px] items-center gap-x-4">
+      <nav className="flex items-center justify-between">
+        <div className="flex h-[80px] min-h-[60px] items-center gap-x-4 px-8">
           <Logo />
           <div className="flex h-full">
             {items.map((item) => (
@@ -94,7 +94,7 @@ function DesktopNavbar() {
             ))}
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 pr-12">
           <ThemeSwitcherBtn />
           <UserButton afterSignOutUrl="/sign-in" />
         </div>

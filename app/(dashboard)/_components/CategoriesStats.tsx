@@ -112,7 +112,10 @@ function CategoriesCard({
                   <div key={item.category} className="flex flex-col gap-2">
                     <div className="flex items-center justify-between">
                       <span className="flex items-center gap-2">
-                        {item.categoryIcon} {item.category}
+                        {item.categoryIcon} {item.category} 
+                        <span className="text-sm text-white">
+                          ({percentage.toFixed(1)}%)
+                        </span>
                       </span>
                       <span className={`${type === "income" ? "text-emerald-500" : "text-rose-500"}`}>
                         {formatter.format(amount)}
