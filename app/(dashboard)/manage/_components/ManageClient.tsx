@@ -8,7 +8,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { TrendingDown, TrendingUp, Trash2 } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import dynamic from "next/dynamic";
@@ -36,6 +36,8 @@ function ManageClient({ userSettings }: Props) {
   const [newCategoryIcon, setNewCategoryIcon] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [categoryType, setCategoryType] = useState<"income" | "expense">("income");
+  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const queryClient = useQueryClient();
   const theme = useTheme();
 
@@ -94,7 +96,7 @@ function ManageClient({ userSettings }: Props) {
     }
   };
 
-  const handleDeleteCategory = async (category: any) => {
+  const handleDeleteCategory = async (category: Category) => {
     try {
       const categoryId = `${category.name}|${category.type}`;
       const response = await fetch(`/api/categories/${categoryId}`, {
@@ -105,6 +107,8 @@ function ManageClient({ userSettings }: Props) {
 
       toast.success("Category deleted successfully");
       queryClient.invalidateQueries({ queryKey: ["categories"] });
+      setIsDeleteDialogOpen(false);
+      setCategoryToDelete(null);
     } catch (error) {
       toast.error("Failed to delete category");
     }
@@ -112,6 +116,68 @@ function ManageClient({ userSettings }: Props) {
 
   const incomeCategories = categories?.filter((cat: any) => cat.type === "income") || [];
   const expenseCategories = categories?.filter((cat: any) => cat.type === "expense") || [];
+
+  const CategoryCard = ({ category }: { category: Category }) => (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between">
+          <span className="flex items-center gap-2">
+            {category.icon} {category.name}
+            {categories && categories.filter((c: Category) => c.name === category.name).length > 1 && (
+              <span className="text-xs text-muted-foreground">
+                ({category.type})
+              </span>
+            )}
+          </span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Dialog 
+          open={isDeleteDialogOpen && categoryToDelete?.name === category.name && categoryToDelete?.type === category.type} 
+          onOpenChange={(open) => {
+            setIsDeleteDialogOpen(open);
+            if (!open) setCategoryToDelete(null);
+          }}
+        >
+          <DialogTrigger asChild>
+            <Button
+              variant="ghost"
+              className="w-full text-muted-foreground hover:text-destructive hover:bg-red-500/10 dark:hover:bg-red-500 dark:hover:text-white"
+              onClick={() => setCategoryToDelete(category)}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Remove
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete Category</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete the category "{category.name}"? This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="flex items-center gap-2 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsDeleteDialogOpen(false);
+                  setCategoryToDelete(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => handleDeleteCategory(category)}
+              >
+                Delete Category
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </CardContent>
+    </Card>
+  );
 
   return (
     <div className="container max-w-7xl mx-auto py-6 space-y-8">
@@ -152,7 +218,7 @@ function ManageClient({ userSettings }: Props) {
             setCategoryType("income");
           }}>
             <DialogTrigger asChild>
-              <Button variant="outline">Create category</Button>
+              <Button variant="outline" className="bg-white dark:bg-white dark:text-black dark:hover:bg-white/90">Create category</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
@@ -209,31 +275,11 @@ function ManageClient({ userSettings }: Props) {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {incomeCategories.map((category: any) => (
-              <Card key={category.id}>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span className="flex items-center gap-2">
-                      {category.icon} {category.name}
-                      {categories && categories.filter((c: Category) => c.name === category.name).length > 1 && (
-                        <span className="text-xs text-muted-foreground">
-                          ({category.type})
-                        </span>
-                      )}
-                    </span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Button
-                    variant="ghost"
-                    className="w-full text-muted-foreground hover:text-destructive"
-                    onClick={() => handleDeleteCategory(category)}
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Remove
-                  </Button>
-                </CardContent>
-              </Card>
+            {incomeCategories.map((category) => (
+              <CategoryCard 
+                key={`${category.name}-${category.type}`} 
+                category={category} 
+              />
             ))}
           </div>
         </CardContent>
@@ -254,7 +300,7 @@ function ManageClient({ userSettings }: Props) {
             setCategoryType("expense");
           }}>
             <DialogTrigger asChild>
-              <Button variant="outline">Create category</Button>
+              <Button variant="outline" className="bg-white dark:bg-white dark:text-black dark:hover:bg-white/90">Create category</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
@@ -311,31 +357,11 @@ function ManageClient({ userSettings }: Props) {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {expenseCategories.map((category: any) => (
-              <Card key={category.id}>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span className="flex items-center gap-2">
-                      {category.icon} {category.name}
-                      {categories && categories.filter((c: Category) => c.name === category.name).length > 1 && (
-                        <span className="text-xs text-muted-foreground">
-                          ({category.type})
-                        </span>
-                      )}
-                    </span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Button
-                    variant="ghost"
-                    className="w-full text-muted-foreground hover:text-destructive"
-                    onClick={() => handleDeleteCategory(category)}
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Remove
-                  </Button>
-                </CardContent>
-              </Card>
+            {expenseCategories.map((category) => (
+              <CategoryCard 
+                key={`${category.name}-${category.type}`} 
+                category={category} 
+              />
             ))}
           </div>
         </CardContent>
