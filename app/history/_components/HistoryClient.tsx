@@ -59,8 +59,61 @@ function HistoryClient({ userSettings }: Props) {
       ).then((res) => res.json()),
   });
 
-  const incomeData = categoryData?.filter((d) => d.type === "income") || [];
-  const expenseData = categoryData?.filter((d) => d.type === "expense") || [];
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  // Create base data with all months initialized to 0
+  const baseMonthlyData = useMemo(() => monthNames.map(month => ({
+    month,
+    income: 0,
+    expense: 0
+  })), [monthNames]);
+
+  const formattedMonthlyData = useMemo(() => {
+    if (!monthlyData) return [];
+
+    return baseMonthlyData.map(baseMonth => {
+      const monthIndex = monthNames.indexOf(baseMonth.month);
+      
+      // Create dates for comparison using the first and last day of each month
+      const startOfCurrentMonth = new Date(dateRange.from.getFullYear(), monthIndex, 1);
+      const endOfCurrentMonth = new Date(dateRange.from.getFullYear(), monthIndex + 1, 0);
+      
+      // Create dates for the selected range
+      const startOfRange = new Date(dateRange.from.getFullYear(), dateRange.from.getMonth(), 1);
+      const endOfRange = new Date(dateRange.to.getFullYear(), dateRange.to.getMonth() + 1, 0);
+
+      // A month should be shown if it falls completely within the selected range
+      const isInRange = (
+        startOfCurrentMonth.getTime() >= startOfRange.getTime() &&
+        endOfCurrentMonth.getTime() <= endOfRange.getTime()
+      );
+
+      if (!isInRange) return null;
+
+      const monthData = monthlyData.find(data => {
+        const [monthStr] = data.month.split('/');
+        return parseInt(monthStr) - 1 === monthIndex;
+      });
+
+      return {
+        month: baseMonth.month,
+        income: monthData?.income || 0,
+        expense: monthData?.expense || 0
+      };
+    }).filter(Boolean);
+  }, [monthlyData, dateRange, monthNames]);
+
+  // Filter category data based on date range
+  const filteredCategoryData = useMemo(() => {
+    if (!categoryData) return [];
+    
+    // For pie charts, we want to show all data within the selected range
+    // The API should already filter by date range, so we use all data
+    return categoryData;
+  }, [categoryData]);
+
+  const incomeData = filteredCategoryData.filter((d) => d.type === "income") || [];
+  const expenseData = filteredCategoryData.filter((d) => d.type === "expense") || [];
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
@@ -91,29 +144,6 @@ function HistoryClient({ userSettings }: Props) {
     }
     return null;
   };
-
-  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-  // Create base data with all months initialized to 0
-  const baseMonthlyData = monthNames.map(month => ({
-    month,
-    income: 0,
-    expense: 0
-  }));
-
-  // Merge actual data with base data
-  const formattedMonthlyData = baseMonthlyData.map(baseMonth => {
-    const monthData = monthlyData?.find(data => {
-      const [month] = data.month.split('/');
-      return monthNames[parseInt(month) - 1] === baseMonth.month;
-    });
-
-    return monthData ? {
-      month: baseMonth.month,
-      income: monthData.income,
-      expense: monthData.expense
-    } : baseMonth;
-  });
 
   return (
     <div className="container max-w-7xl mx-auto py-6 space-y-8">
@@ -146,9 +176,7 @@ function HistoryClient({ userSettings }: Props) {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip
-                  content={<CustomPieTooltip />}
-                />
+                <Tooltip content={<CustomPieTooltip />} />
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
@@ -209,7 +237,7 @@ function HistoryClient({ userSettings }: Props) {
                 />
                 <Tooltip 
                   content={<CustomBarTooltip />}
-                  cursor={{ fill: 'transparent' }}
+                  cursor={{ fill: 'rgba(255,255,255,0.1)' }}
                 />
                 <Legend 
                   wrapperStyle={{ color: 'white' }}
