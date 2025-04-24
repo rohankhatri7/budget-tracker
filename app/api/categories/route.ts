@@ -1,34 +1,70 @@
+import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
-import { currentUser } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
 import { z } from "zod";
+import { TransactionType } from "@/lib/types";
 
 export async function GET(request: Request) {
-  const user = await currentUser();
-  if (!user) {
-    redirect("/sign-in");
-  }
-
-  const { searchParams } = new URL(request.url);
-  const paramType = searchParams.get("type");
-
-  const validator = z.enum(["expense", "income"]).nullable(); //can call without passing type parameter & if not defined, not filtering by type
-  const queryParams = validator.safeParse(paramType);
-  if (!queryParams.success) {
-    return Response.json(queryParams.error, {
-      status: 400,
-    });
-  }
-
-  const type = queryParams.data;
-  const categories = await prisma.category.findMany({
-    where: {
-      userId: user.id,
-      ...(type && {type}), //include type in the filters if defined
-    },
-    orderBy: {
-        name: "asc",
+  try {
+    const session = await auth();
+    const userId = session?.userId;
+    if (!userId) {
+      return new NextResponse("Unauthorized", { status: 401 });
     }
-  });
-  return Response.json(categories);
+
+    const { searchParams } = new URL(request.url);
+    const type = searchParams.get("type") as TransactionType | null;
+
+    const categories = await prisma.category.findMany({
+      where: {
+        userId,
+        ...(type && { type }),
+      },
+      orderBy: {
+        name: "asc",
+      },
+    });
+
+    return NextResponse.json(categories);
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    return new NextResponse("Internal Server Error", { status: 500 });
+  }
+}
+
+export async function POST(req: Request) {
+  try {
+    const session = await auth();
+    const userId = session?.userId;
+    if (!userId) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    const body = await req.json();
+    const schema = z.object({
+      name: z.string(),
+      icon: z.string(),
+      type: z.enum(["income", "expense"]),
+    });
+
+    const result = schema.safeParse(body);
+    if (!result.success) {
+      return new NextResponse("Invalid request body", { status: 400 });
+    }
+
+    const { name, icon, type } = result.data;
+    const category = await prisma.category.create({
+      data: {
+        name,
+        icon,
+        type,
+        userId,
+      },
+    });
+
+    return NextResponse.json(category);
+  } catch (error) {
+    console.error("Error creating category:", error);
+    return new NextResponse("Internal Server Error", { status: 500 });
+  }
 }

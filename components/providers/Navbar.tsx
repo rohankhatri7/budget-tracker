@@ -29,7 +29,7 @@ function Navbar() {
 const items = [
   { label: "Dashboard", link: "/" },
   { label: "Transactions", link: "/transactions" },
-  { label: "History", link: "/history" },
+  { label: "Analytics", link: "/history" },
   { label: "Manage", link: "/manage" },
 ]
 
