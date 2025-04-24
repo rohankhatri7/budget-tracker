@@ -77,7 +77,7 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
   align = "end",
   locale = "en-US",
   showCompare = true,
-  maxDays = 90,
+  maxDays = 365,
   onError,
 }): JSX.Element => {
   const [isOpen, setIsOpen] = useState(false)

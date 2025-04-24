@@ -3,19 +3,15 @@
 import { DateRangePicker } from "@/components/ui/date-range-picker"
 import { MAX_DATE_RANGE_DAYS } from "@/lib/constants"
 import type { UserSettings } from "@prisma/client"
-import { differenceInDays, startOfMonth } from "date-fns"
-import { useState, useCallback } from "react"
+import { differenceInDays } from "date-fns"
+import { useCallback } from "react"
 import { toast } from "sonner"
 import StatsCards from "./StatsCards"
 import CategoriesStats from "./CategoriesStats"
-import { date } from "zod"
+import { useDateRange } from "@/lib/hooks/useDateRange"
 
 function Overview({ userSettings }: { userSettings: UserSettings }) {
-  const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
-    from: startOfMonth(new Date()),
-    to: new Date(),
-  })
-  const [refreshTrigger, setRefreshTrigger] = useState(0)
+  const { dateRange, setDateRange } = useDateRange();
 
   const handleDateChange = useCallback((values: { range: { from: Date; to: Date | undefined } }) => {
     if (!values.range.from || !values.range.to) {
@@ -34,15 +30,11 @@ function Overview({ userSettings }: { userSettings: UserSettings }) {
       return
     }
 
-    // Update the date range state
     setDateRange({
       from: values.range.from,
       to: values.range.to,
     })
-
-    // Force a refresh of the stats
-    setRefreshTrigger((prev) => prev + 1)
-  }, [])
+  }, [setDateRange])
 
   return (
     <>
@@ -58,7 +50,6 @@ function Overview({ userSettings }: { userSettings: UserSettings }) {
         </div>
       </div>
       <StatsCards
-        key={`stats-${dateRange.from.toISOString()}-${dateRange.to.toISOString()}-${refreshTrigger}`}
         userSettings={userSettings}
         from={dateRange.from}
         to={dateRange.to}
