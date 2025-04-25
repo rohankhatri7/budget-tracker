@@ -22,9 +22,9 @@ function CategoriesStats({ userSettings, from, to }: Props) {
       fetch(
         `/api/stats/categories?from=${DatetoUTCDate(from)}&to=${DatetoUTCDate(to)}`
       ).then((res) => res.json()),
-    staleTime: 30 * 1000,
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
 
   const formatter = useMemo(() => {

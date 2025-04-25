@@ -88,6 +88,8 @@ function ManageClient({ userSettings }: Props) {
 
       toast.success("Category created successfully");
       queryClient.invalidateQueries({ queryKey: ["categories"] });
+      queryClient.invalidateQueries({ queryKey: ["overview", "stats", "categories"] });
+      queryClient.invalidateQueries({ queryKey: ["overview-stats"] });
       setIsCreateDialogOpen(false);
       setNewCategoryName("");
       setNewCategoryIcon("");
@@ -107,6 +109,8 @@ function ManageClient({ userSettings }: Props) {
 
       toast.success("Category deleted successfully");
       queryClient.invalidateQueries({ queryKey: ["categories"] });
+      queryClient.invalidateQueries({ queryKey: ["overview", "stats", "categories"] });
+      queryClient.invalidateQueries({ queryKey: ["overview-stats"] });
       setIsDeleteDialogOpen(false);
       setCategoryToDelete(null);
     } catch (error) {
