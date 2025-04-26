@@ -32,21 +32,46 @@ export async function GET(request: Request) {
     }
 
     const { from, to, category, type } = result.data;
+    
+    console.log("Transactions API - received search parameters:", {
+      from,
+      to,
+      category,
+      type
+    });
+
+    // Create proper date objects and set time to beginning and end of day
+    const fromDate = new Date(from);
+    const toDate = new Date(to);
+    
+    fromDate.setHours(0, 0, 0, 0);
+    toDate.setHours(23, 59, 59, 999);
+    
+    console.log("Transactions API - adjusted date range:", {
+      fromDate: fromDate.toISOString(),
+      toDate: toDate.toISOString()
+    });
+
+    const whereClause = {
+      userId,
+      date: {
+        gte: fromDate,
+        lte: toDate,
+      },
+      ...(category && { category }),
+      ...(type && { type }),
+    };
+    
+    console.log("Transactions API - using where clause:", JSON.stringify(whereClause, null, 2));
 
     const transactions = await prisma.transaction.findMany({
-      where: {
-        userId,
-        date: {
-          gte: new Date(from),
-          lte: new Date(to),
-        },
-        ...(category && { category }),
-        ...(type && { type }),
-      },
+      where: whereClause,
       orderBy: {
         date: "desc",
       },
     });
+    
+    console.log(`Transactions API - found ${transactions.length} transactions`);
 
     return NextResponse.json(transactions);
   } catch (error) {

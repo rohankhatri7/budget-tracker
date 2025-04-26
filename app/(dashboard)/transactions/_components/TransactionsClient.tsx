@@ -4,7 +4,7 @@ import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { useDateRange } from "@/lib/hooks/useDateRange";
 import { UserSettings, Transaction, Category } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
-import { DatetoUTCDate, GetFormatterForCurrency } from "@/lib/helpers";
+import { DatetoUTCDate, GetFormatterForCurrency, preserveDateWithoutTimezone } from "@/lib/helpers";
 import { differenceInDays } from "date-fns";
 import { toast } from "sonner";
 import { MAX_DATE_RANGE_DAYS } from "@/lib/constants";
@@ -78,18 +78,40 @@ function TransactionsClient({ userSettings }: Props) {
       });
 
       if (selectedCategory && selectedCategory !== "all") {
-        params.append("category", selectedCategory);
+        // Extract the category name from the composite ID (name-type)
+        const selectedCategoryName = selectedCategory.split('-')[0];
+        params.append("category", selectedCategoryName);
+        
+        // If type is not already filtered, also filter by the category's type
+        if (selectedType === "all") {
+          const categoryType = selectedCategory.split('-')[1] as TransactionType;
+          if (categoryType) {
+            params.append("type", categoryType);
+          }
+        }
       }
 
       if (selectedType && selectedType !== "all") {
         params.append("type", selectedType);
       }
 
+      console.log("Fetching transactions with params:", {
+        from: dateRange.from.toISOString(),
+        to: dateRange.to.toISOString(),
+        fromUTC: DatetoUTCDate(dateRange.from).toISOString(),
+        toUTC: DatetoUTCDate(dateRange.to).toISOString(),
+        category: selectedCategory,
+        extractedCategory: selectedCategory !== "all" ? selectedCategory.split('-')[0] : null,
+        type: selectedType
+      });
+
       const response = await fetch(`/api/transactions?${params}`);
       if (!response.ok) {
         throw new Error("Failed to fetch transactions");
       }
-      return response.json();
+      const data = await response.json();
+      console.log("Received transactions:", data);
+      return data;
     },
     refetchOnMount: true,
     refetchOnWindowFocus: true,
@@ -202,7 +224,19 @@ function TransactionsClient({ userSettings }: Props) {
                         {category?.icon} {transaction.category}
                       </TableCell>
                       <TableCell>{transaction.description}</TableCell>
-                      <TableCell>{format(new Date(transaction.date), "MM/dd/yyyy")}</TableCell>
+                      <TableCell>
+                        {(() => {
+                          const originalDate = new Date(transaction.date);
+                          const preservedDate = preserveDateWithoutTimezone(transaction.date);
+                          console.log(`Transaction date transformation:`, {
+                            id: transaction.id,
+                            original: originalDate.toISOString(),
+                            preserved: preservedDate.toISOString(),
+                            displayed: format(preservedDate, "MM/dd/yyyy")
+                          });
+                          return format(preservedDate, "MM/dd/yyyy");
+                        })()}
+                      </TableCell>
                       <TableCell>
                         <span
                           className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${
