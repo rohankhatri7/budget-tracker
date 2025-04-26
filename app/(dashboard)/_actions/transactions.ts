@@ -100,3 +100,82 @@ export async function CreateTransaction(form: CreateTransactionSchemaType) {
   }
 }
 
+export async function DeleteTransaction(transactionId: string) {
+  const user = await currentUser();
+  if (!user) {
+    redirect("/sign-in");
+  }
+
+  try {
+    // First get the transaction to get its details (date, amount, type)
+    const transaction = await prisma.transaction.findUnique({
+      where: {
+        id: transactionId,
+        userId: user.id, // Security check to ensure user owns the transaction
+      },
+    });
+
+    if (!transaction) {
+      throw new Error("Transaction not found or you do not have permission to delete it");
+    }
+
+    const { date, amount, type } = transaction;
+
+    // Now perform deletion and update aggregates in a transaction
+    try {
+      await prisma.$transaction([
+        // 1. Delete the transaction
+        prisma.transaction.delete({
+          where: {
+            id: transactionId,
+            userId: user.id, // Extra security check
+          },
+        }),
+
+        // 2. Update monthHistory (decrement the appropriate amount)
+        prisma.monthHistory.update({
+          where: {
+            day_month_year_userId: {
+              userId: user.id,
+              day: date.getUTCDate(),
+              month: date.getUTCMonth(),
+              year: date.getUTCFullYear(),
+            },
+          },
+          data: {
+            expense: { decrement: type === "expense" ? amount : 0 },
+            income: { decrement: type === "income" ? amount : 0 },
+          },
+        }),
+
+        // 3. Update yearHistory (decrement the appropriate amount)
+        prisma.yearHistory.update({
+          where: {
+            month_year_userId: {
+              userId: user.id,
+              month: date.getUTCMonth(),
+              year: date.getUTCFullYear(),
+            },
+          },
+          data: {
+            expense: { decrement: type === "expense" ? amount : 0 },
+            income: { decrement: type === "income" ? amount : 0 },
+          },
+        }),
+      ]);
+    } catch (txError) {
+      console.error("Transaction operation failed:", txError);
+      throw new Error("Failed to delete transaction. Database update error.");
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Transaction deletion error:", error);
+    // Make sure we throw an error that can be serialized
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    }
+    throw new Error("Unknown error during transaction deletion");
+  }
+}
+
