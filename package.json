@@ -6,10 +6,15 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint", 
+    "postinstall": "prisma generate"
   },
   "overrides": {
     "@emoji-mart/react": {
+      "react": "19.0.0",
+      "react-dom": "19.0.0"
+    },
+    "cmdk": {
       "react": "19.0.0",
       "react-dom": "19.0.0"
     }
