@@ -80,9 +80,17 @@ function CreateTransactionDialog({ trigger, type }: Props) {
         queryKey: ["overview-stats"],
       })
 
-      // Invalidate transactions list if you have one
+      // Invalidate transactions list
       queryClient.invalidateQueries({
         queryKey: ["transactions"],
+      })
+
+      // Invalidate analytics queries
+      queryClient.invalidateQueries({
+        queryKey: ["history", "categories"],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ["history", "monthly"],
       })
 
       setOpen(false)

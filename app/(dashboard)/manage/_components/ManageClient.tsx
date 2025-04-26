@@ -124,7 +124,7 @@ function ManageClient({ userSettings }: Props) {
   const CategoryCard = ({ category }: { category: Category }) => (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
+        <CardTitle className="flex items-center justify-center text-center">
           <span className="flex items-center gap-2">
             {category.icon} {category.name}
             {categories && categories.filter((c: Category) => c.name === category.name).length > 1 && (
@@ -135,7 +135,7 @@ function ManageClient({ userSettings }: Props) {
           </span>
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex justify-center">
         <Dialog 
           open={isDeleteDialogOpen && categoryToDelete?.name === category.name && categoryToDelete?.type === category.type} 
           onOpenChange={(open) => {

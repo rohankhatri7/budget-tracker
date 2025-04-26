@@ -115,14 +115,28 @@ function HistoryClient({ userSettings }: Props) {
   const incomeData = filteredCategoryData.filter((d) => d.type === "income") || [];
   const expenseData = filteredCategoryData.filter((d) => d.type === "expense") || [];
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
+  const COLORS = [
+    '#0088FE', // Blue
+    '#00C49F', // Green
+    '#FFBB28', // Yellow
+    '#FF8042', // Orange
+    '#8884d8', // Purple
+    '#82ca9d', // Light Green
+    '#ffc658', // Light Orange
+    '#8dd1e1', // Light Blue
+    '#a4de6c', // Lime
+    '#d0ed57'  // Yellow Green
+  ];
 
   const CustomPieTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="text-sm text-white">
+        <div className="bg-background/80 backdrop-blur-sm border rounded-lg p-2 shadow-lg">
           <p className="font-medium">{payload[0].name}</p>
-          <p>{formatter.format(payload[0].value)}</p>
+          <p className="text-sm">{formatter.format(payload[0].value)}</p>
+          <p className="text-xs text-muted-foreground">
+            ({((payload[0].value / payload[0].payload.total) * 100).toFixed(1)}%)
+          </p>
         </div>
       );
     }
@@ -160,7 +174,7 @@ function HistoryClient({ userSettings }: Props) {
         {/* Income Distribution */}
         <Card className="p-6">
           <h3 className="text-lg font-semibold mb-4">Income Distribution</h3>
-          <div className="h-[300px]">
+          <div className="h-[300px] relative">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -169,15 +183,32 @@ function HistoryClient({ userSettings }: Props) {
                   nameKey="category"
                   cx="50%"
                   cy="50%"
-                  outerRadius={100}
-                  label={(entry: any) => `${entry.category} (${((entry._sum.amount / incomeData.reduce((acc: number, curr: any) => acc + (curr._sum?.amount || 0), 0)) * 100).toFixed(1)}%)`}
+                  outerRadius={80}
                 >
-                  {incomeData.map((_: any, index: number) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  {incomeData.map((_, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={COLORS[index % COLORS.length]} 
+                      strokeWidth={1}
+                    />
                   ))}
                 </Pie>
                 <Tooltip content={<CustomPieTooltip />} />
-                <Legend />
+                <Legend
+                  layout="vertical"
+                  align="right"
+                  verticalAlign="middle"
+                  formatter={(value, entry: any) => {
+                    const amount = entry.payload._sum.amount;
+                    const total = incomeData.reduce((acc, curr) => acc + curr._sum.amount, 0);
+                    const percentage = ((amount / total) * 100).toFixed(1);
+                    return (
+                      <span className="text-sm">
+                        {value} ({percentage}%)
+                      </span>
+                    );
+                  }}
+                />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -186,7 +217,7 @@ function HistoryClient({ userSettings }: Props) {
         {/* Expense Distribution */}
         <Card className="p-6">
           <h3 className="text-lg font-semibold mb-4">Expense Distribution</h3>
-          <div className="h-[300px]">
+          <div className="h-[300px] relative">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -195,17 +226,32 @@ function HistoryClient({ userSettings }: Props) {
                   nameKey="category"
                   cx="50%"
                   cy="50%"
-                  outerRadius={100}
-                  label={(entry: any) => `${entry.category} (${((entry._sum.amount / expenseData.reduce((acc: number, curr: any) => acc + (curr._sum?.amount || 0), 0)) * 100).toFixed(1)}%)`}
+                  outerRadius={80}
                 >
-                  {expenseData.map((_: any, index: number) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  {expenseData.map((_, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={COLORS[index % COLORS.length]} 
+                      strokeWidth={1}
+                    />
                   ))}
                 </Pie>
-                <Tooltip
-                  content={<CustomPieTooltip />}
+                <Tooltip content={<CustomPieTooltip />} />
+                <Legend
+                  layout="vertical"
+                  align="right"
+                  verticalAlign="middle"
+                  formatter={(value, entry: any) => {
+                    const amount = entry.payload._sum.amount;
+                    const total = expenseData.reduce((acc, curr) => acc + curr._sum.amount, 0);
+                    const percentage = ((amount / total) * 100).toFixed(1);
+                    return (
+                      <span className="text-sm">
+                        {value} ({percentage}%)
+                      </span>
+                    );
+                  }}
                 />
-                <Legend />
               </PieChart>
             </ResponsiveContainer>
           </div>

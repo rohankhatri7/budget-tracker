@@ -81,10 +81,10 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
   onError,
 }): JSX.Element => {
   const [isOpen, setIsOpen] = useState(false)
-  const [range, setRange] = useState<DateRange>({
+  const [range, setRange] = useState<DateRange>(() => ({
     from: getDateAdjustedForTimezone(initialDateFrom),
     to: initialDateTo ? getDateAdjustedForTimezone(initialDateTo) : getDateAdjustedForTimezone(initialDateFrom),
-  })
+  }))
   const [rangeCompare, setRangeCompare] = useState<DateRange | undefined>(
     initialCompareFrom
       ? {
@@ -109,6 +109,13 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
     window.addEventListener("resize", handleResize)
     return () => window.removeEventListener("resize", handleResize)
   }, [])
+
+  useEffect(() => {
+    setRange({
+      from: getDateAdjustedForTimezone(initialDateFrom),
+      to: initialDateTo ? getDateAdjustedForTimezone(initialDateTo) : getDateAdjustedForTimezone(initialDateFrom),
+    });
+  }, [initialDateFrom, initialDateTo]);
 
   const validateRange = (range: DateRange): boolean => {
     if (!range.from || !range.to) return true

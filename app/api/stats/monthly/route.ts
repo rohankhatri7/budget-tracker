@@ -53,28 +53,46 @@ async function getMonthlyStats(userId: string, from: Date, to: Date) {
   fromDate.setHours(0, 0, 0, 0);
   toDate.setHours(23, 59, 59, 999);
 
-  const monthlyStats = await prisma.monthHistory.groupBy({
-    by: ["month", "year"],
+  // Get all transactions within the date range
+  const transactions = await prisma.transaction.findMany({
     where: {
       userId,
-      year: {
-        gte: fromDate.getUTCFullYear(),
-        lte: toDate.getUTCFullYear(),
-      },
-      month: {
-        gte: fromDate.getUTCMonth(),
-        lte: toDate.getUTCMonth(),
+      date: {
+        gte: fromDate,
+        lte: toDate,
       },
     },
-    _sum: {
-      income: true,
-      expense: true,
+    select: {
+      date: true,
+      amount: true,
+      type: true,
     },
   });
 
-  return monthlyStats.map(stat => ({
-    month: `${stat.month + 1}/${stat.year}`,
-    income: stat._sum.income || 0,
-    expense: stat._sum.expense || 0,
+  // Group transactions by month and year
+  const monthlyStats = new Map<string, { income: number; expense: number }>();
+
+  transactions.forEach(transaction => {
+    const month = transaction.date.getUTCMonth() + 1;
+    const year = transaction.date.getUTCFullYear();
+    const key = `${month}/${year}`;
+
+    if (!monthlyStats.has(key)) {
+      monthlyStats.set(key, { income: 0, expense: 0 });
+    }
+
+    const stats = monthlyStats.get(key)!;
+    if (transaction.type === 'income') {
+      stats.income += transaction.amount;
+    } else {
+      stats.expense += transaction.amount;
+    }
+  });
+
+  // Convert to array format
+  return Array.from(monthlyStats.entries()).map(([month, stats]) => ({
+    month,
+    income: stats.income,
+    expense: stats.expense,
   }));
 } 
