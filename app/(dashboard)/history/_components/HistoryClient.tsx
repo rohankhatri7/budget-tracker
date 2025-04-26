@@ -130,12 +130,21 @@ function HistoryClient({ userSettings }: Props) {
 
   const CustomPieTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
+      const value = payload[0].value;
+      // Calculate total amount for this category type (income or expense)
+      const total = payload[0].payload.type === "income" 
+        ? incomeData.reduce((acc, curr) => acc + (curr._sum?.amount || 0), 0)
+        : expenseData.reduce((acc, curr) => acc + (curr._sum?.amount || 0), 0);
+      
+      // Only show percentage if total is greater than 0
+      const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : "0.0";
+      
       return (
         <div className="bg-background/80 backdrop-blur-sm border rounded-lg p-2 shadow-lg">
           <p className="font-medium">{payload[0].name}</p>
-          <p className="text-sm">{formatter.format(payload[0].value)}</p>
+          <p className="text-sm">{formatter.format(value)}</p>
           <p className="text-xs text-muted-foreground">
-            ({((payload[0].value / payload[0].payload.total) * 100).toFixed(1)}%)
+            ({percentage}%)
           </p>
         </div>
       );

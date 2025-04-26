@@ -26,8 +26,8 @@ async function HistoryPage() {
       <div className="border-b bg-card">
         <div className="flex flex-wrap items-center justify-between gap-6 py-8 px-6">
           <div>
-            <h1 className="text-3xl font-bold">Analytics & History</h1>
-            <p className="text-muted-foreground">View your transaction history and analytics</p>
+            <h1 className="text-3xl font-bold">Analytics</h1>
+            <p className="text-muted-foreground">View your transaction analytics and insights</p>
           </div>
         </div>
       </div>

@@ -8,7 +8,7 @@ import type { UserSettings } from "@prisma/client"
 import { useQuery } from "@tanstack/react-query"
 import { TrendingUp, TrendingDown, Wallet } from "lucide-react"
 import type React from "react"
-import { useCallback, useMemo } from "react"
+import { useCallback, useMemo, useState, useRef, useEffect, MouseEvent } from "react"
 import CountUp from "react-countup"
 
 interface Props {
@@ -96,27 +96,99 @@ const StatCard = ({
   icon: React.ReactNode
 }) => {
   const formatFn = useCallback((val: number) => formatter.format(val), [formatter])
+  const cardRef = useRef<HTMLDivElement>(null)
+  const [rotation, setRotation] = useState({ x: 0, y: 0 })
+  const [isHovering, setIsHovering] = useState(false)
+
+  // Handle mouse movement over the card
+  const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return
+    
+    // Get card dimensions and position
+    const rect = cardRef.current.getBoundingClientRect()
+    
+    // Calculate mouse position relative to the card center
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
+    
+    // Calculate rotation (max 10 degrees in each direction)
+    const centerX = rect.width / 2
+    const centerY = rect.height / 2
+    
+    // Calculate rotation based on mouse position
+    // Further from center = more rotation
+    const rotateY = ((x - centerX) / centerX) * 10
+    const rotateX = ((centerY - y) / centerY) * 10
+    
+    setRotation({ x: rotateX, y: rotateY })
+  }
+
+  // Reset rotation when mouse leaves
+  const handleMouseLeave = () => {
+    setIsHovering(false)
+    setRotation({ x: 0, y: 0 })
+  }
+
+  // Set hovering state when mouse enters
+  const handleMouseEnter = () => {
+    setIsHovering(true)
+  }
 
   return (
-    <Card className="flex w-full items-center p-4 h-28 rounded-lg">
-      <div className="flex w-full items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="[&>svg]:h-12 [&>svg]:w-12">{icon}</div>
-          <p className="text-2xl font-semibold text-white">{title}</p>
+    <div 
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      className="w-full perspective-1000 h-28"
+    >
+      <Card 
+        className={`
+          flex w-full items-center p-4 h-28 rounded-lg 
+          transition-transform duration-200 ease-out 
+          transform-gpu will-change-transform 
+          shadow-lg hover:shadow-xl
+          ${isHovering ? 'bg-gradient-to-br from-background to-background/90' : ''}
+        `}
+        style={{ 
+          transform: isHovering ? 
+            `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg) scale3d(1.03, 1.03, 1.03)` : 
+            'rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)'
+        }}
+      >
+        <div className="flex w-full items-center justify-between relative">
+          <div 
+            className="flex items-center gap-4 transition-transform duration-200"
+            style={{ 
+              transform: isHovering ? 
+                `translateZ(15px)` : 
+                'translateZ(0px)'
+            }}
+          >
+            <div className="[&>svg]:h-12 [&>svg]:w-12">{icon}</div>
+            <p className="text-2xl font-semibold text-white">{title}</p>
+          </div>
+          <div 
+            className="pr-3 transition-transform duration-200"
+            style={{ 
+              transform: isHovering ? 
+                `translateZ(25px)` : 
+                'translateZ(0px)'
+            }}
+          >
+            <CountUp
+              preserveValue
+              redraw={false}
+              end={value}
+              decimals={2}
+              formattingFn={formatFn}
+              className={`text-3xl font-semibold ${
+                title === "Income" ? "text-emerald-600" : title === "Expense" ? "text-rose-600" : "text-violet-600"
+              }`}
+            />
+          </div>
         </div>
-        <div className="pr-3">
-          <CountUp
-            preserveValue
-            redraw={false}
-            end={value}
-            decimals={2}
-            formattingFn={formatFn}
-            className={`text-3xl font-semibold ${
-              title === "Income" ? "text-emerald-600" : title === "Expense" ? "text-rose-600" : "text-violet-600"
-            }`}
-          />
-        </div>
-      </div>
-    </Card>
+      </Card>
+    </div>
   )
 }

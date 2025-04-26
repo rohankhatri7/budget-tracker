@@ -20,13 +20,12 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { TransactionType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { CreateCategorySchema, CreateCategorySchemaType } from "@/schema/categories";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CircleOff, Loader2, PlusSquare } from "lucide-react";
-import React, { useCallback, useState } from "react";
+import { CircleOff, Loader2, PlusSquare, X } from "lucide-react";
+import React, { useCallback, useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import Picker from "@emoji-mart/react";
 import data from "@emoji-mart/data";
@@ -44,6 +43,9 @@ interface Props {
 
 function CreateCategoryDialog({ type, successCallback, className }: Props) {
   const [open, setOpen] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const emojiContainerRef = useRef<HTMLDivElement>(null);
+  
   const form = useForm<CreateCategorySchemaType>({
     resolver: zodResolver(CreateCategorySchema),
     defaultValues: {
@@ -53,6 +55,30 @@ function CreateCategoryDialog({ type, successCallback, className }: Props) {
 
   const queryClient = useQueryClient();
   const theme = useTheme();
+
+  // Close emoji picker when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        emojiContainerRef.current && 
+        !emojiContainerRef.current.contains(event.target as Node) &&
+        showEmojiPicker
+      ) {
+        // Only close the emoji picker, not the dialog
+        setShowEmojiPicker(false);
+      }
+    }
+
+    // Add event listener only when emoji picker is open
+    if (showEmojiPicker) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    
+    // Clean up
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showEmojiPicker]);
 
   const { mutate, isPending } = useMutation({
     mutationFn: CreateCategory,
@@ -106,7 +132,12 @@ function CreateCategoryDialog({ type, successCallback, className }: Props) {
           Create new
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent 
+        onClick={(e) => e.stopPropagation()} 
+        onPointerDownCapture={(e) => e.stopPropagation()}
+        onMouseDownCapture={(e) => e.stopPropagation()}
+        className="overflow-visible"
+      >
         <DialogHeader>
           <DialogTitle>
             Create{" "}
@@ -148,38 +179,68 @@ function CreateCategoryDialog({ type, successCallback, className }: Props) {
                 <FormItem>
                   <FormLabel>Icon</FormLabel>
                   <FormControl>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button variant={"outline"} className="h-[100px] w-full">
-                          {form.watch("icon") ? (
-                            <div className="flex flex-col items-center gap-2">
-                              <span className="text-5xl" role="img">
-                                {field.value}
-                              </span>
-                              <p className="text-xs text-muted text-foreground">
-                                Click to change
-                              </p>
-                            </div>
-                          ) : (
-                            <div className="flex flex-col items-center gap-2">
-                              <CircleOff className="h-[48px] w-[48px]" />
-                              <p className="text-xs text-muted text-foreground">
-                                Click to select
-                              </p>
-                            </div>
-                          )}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-full">
-                        <Picker
-                          theme={theme.resolvedTheme}
-                          data={data}
-                          onEmojiSelect={(emoji: { native: string }) =>
-                            field.onChange(emoji.native)
-                          }
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    <div className="relative">
+                      <Button 
+                        type="button"
+                        variant="outline" 
+                        className="h-[100px] w-full"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setShowEmojiPicker(!showEmojiPicker);
+                        }}
+                      >
+                        {field.value ? (
+                          <div className="flex flex-col items-center gap-2">
+                            <span className="text-5xl" role="img">
+                              {field.value}
+                            </span>
+                            <p className="text-xs text-muted-foreground">
+                              Click to change
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center gap-2">
+                            <CircleOff className="h-[48px] w-[48px]" />
+                            <p className="text-xs text-muted-foreground">
+                              Click to select
+                            </p>
+                          </div>
+                        )}
+                      </Button>
+
+                      {showEmojiPicker && (
+                        <div 
+                          ref={emojiContainerRef}
+                          className="absolute top-[110px] left-0 z-[1000] w-full max-w-[350px] border border-border rounded-md bg-background shadow-lg"
+                          onClick={(e) => e.stopPropagation()}
+                          onMouseDown={(e) => e.stopPropagation()}
+                        >
+                          <div className="flex justify-between items-center p-2 border-b">
+                            <span className="font-medium">Select emoji</span>
+                            <Button 
+                              type="button"
+                              variant="ghost" 
+                              size="icon"
+                              className="h-6 w-6"
+                              onClick={() => setShowEmojiPicker(false)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          <div className="p-2">
+                            <Picker
+                              theme={theme.resolvedTheme}
+                              data={data}
+                              onEmojiSelect={(emoji: { native: string }) => {
+                                field.onChange(emoji.native);
+                                setShowEmojiPicker(false);
+                              }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </FormControl>
                   <FormDescription>
                     This is how your category will appear in the application
