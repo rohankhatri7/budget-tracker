@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/sheet"
 import { Menu } from "lucide-react"
 
+//render desktop and mobile nav
 function Navbar() {
   return (
     <>
@@ -33,6 +34,7 @@ const items = [
   { label: "Manage", link: "/manage" },
 ]
 
+//mobile has a slide out menu
 function MobileNavbar() {
   const [isOpen, setIsOpen] = useState(false)
 
@@ -79,6 +81,7 @@ function MobileNavbar() {
   )
 }
 
+//desktop navbar has links
 function DesktopNavbar() {
   return (
     <div className="hidden border-separate border-b bg-background md:block">

@@ -1,6 +1,7 @@
 import { PiggyBank } from 'lucide-react'
 import React from 'react'
 
+//logo icon seen in navbar
 function Logo() {
   return (
     <a href="/" className="flex items-center gap-2">
@@ -12,6 +13,7 @@ function Logo() {
   );
 }
 
+//same icon for mobile
 export function LogoMobile() {
   return (
     <a href="/" className="flex items-center gap-2">

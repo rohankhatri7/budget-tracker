@@ -5,6 +5,7 @@ import { UpdateUserCurrencySchema } from "@/schema/userSettings";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
+//update user preferred currency
 export async function UpdateUserCurrency(currency: string) {
     const parsedBody = UpdateUserCurrencySchema.safeParse({
       currency,
@@ -19,6 +20,7 @@ export async function UpdateUserCurrency(currency: string) {
       redirect("/sign-in")
     }
   
+    //update user currency in database
     const userSettings = await prisma.userSettings.update({
       where: {
         userId: user.id,

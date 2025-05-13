@@ -17,6 +17,7 @@ export async function GET(request: Request) {
     return Response.json({ error: "Missing date parameters" }, { status: 400 })
   }
 
+  //validate date params using Zod schema
   const queryParams = OverviewQuerySchema.safeParse({
     from: new Date(from),
     to: new Date(to),
@@ -32,7 +33,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const stats = await getBalanceStats(user.id, queryParams.data.from, queryParams.data.to)
+    const stats = await getBalanceStats(user.id, queryParams.data.from, queryParams.data.to) //get summed income/expense in daterange
 
     return Response.json(stats)
   } catch (error) {
@@ -47,16 +48,13 @@ export async function GET(request: Request) {
 
 export type GetBalanceStateResponseType = Awaited<ReturnType<typeof getBalanceStats>>
 
-async function getBalanceStats(userId: string, from: Date, to: Date) {
-  // Ensure the dates are properly formatted for the database query
+async function getBalanceStats(userId: string, from: Date, to: Date) { //normalize dates for full days
   const fromDate = new Date(from)
   const toDate = new Date(to)
-
-  // Set the time to the beginning and end of the day
   fromDate.setHours(0, 0, 0, 0)
   toDate.setHours(23, 59, 59, 999)
 
-  const totals = await prisma.transaction.groupBy({
+  const totals = await prisma.transaction.groupBy({ //group transactions by type & sum amounts
     by: ["type"],
     where: {
       userId,

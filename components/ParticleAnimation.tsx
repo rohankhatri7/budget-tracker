@@ -8,21 +8,18 @@ export default function ParticleAnimation() {
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
-    // Only proceed if we have the canvas
     if (!canvasRef.current) return;
     
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     
-    // Only proceed if we have the context
     if (!ctx) return;
     
-    // Mouse position tracking
+    //mouse position tracking
     let mouseX = 0;
     let mouseY = 0;
     let mouseRadius = 150;
     
-    // Set canvas size
     const updateCanvasSize = () => {
       if (canvas) {
         canvas.width = window.innerWidth;
@@ -33,7 +30,7 @@ export default function ParticleAnimation() {
     
     updateCanvasSize();
     
-    // Create particles from text
+    //create particles from text
     let particles: Array<{
       x: number;
       y: number;
@@ -44,7 +41,7 @@ export default function ParticleAnimation() {
       density: number;
     }> = [];
     
-    // Create the text
+    //create the text
     function createTextParticles() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.font = isMobile ? 'bold 24px Inter, sans-serif' : 'bold 36px Inter, sans-serif';
@@ -55,10 +52,9 @@ export default function ParticleAnimation() {
       
       const textCoordinates = ctx.getImageData(0, 0, canvas.width, canvas.height);
       
-      // Reset particles
+      //reset particles
       particles = [];
       
-      // Create particles from text pixels
       const particleGap = isMobile ? 4 : 3;
       for (let y = 0; y < canvas.height; y += particleGap) {
         for (let x = 0; x < canvas.width; x += particleGap) {
@@ -77,20 +73,19 @@ export default function ParticleAnimation() {
         }
       }
       
-      // Clear canvas for animation
+      //clear canvas for animation
       ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
     
-    // Initialize
     createTextParticles();
     
-    // Animation loop
+    //animation loop
     function animate() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.fillStyle = 'black';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
-      // Update and draw particles
+      //update and draw particles
       for (let i = 0; i < particles.length; i++) {
         const dx = mouseX - particles[i].x;
         const dy = mouseY - particles[i].y;
@@ -106,13 +101,13 @@ export default function ParticleAnimation() {
           particles[i].y -= moveY;
           ctx.fillStyle = particles[i].color;
         } else {
-          // Return to original position
+          //return to original position
           particles[i].x += (particles[i].baseX - particles[i].x) * 0.05;
           particles[i].y += (particles[i].baseY - particles[i].y) * 0.05;
           ctx.fillStyle = 'white';
         }
         
-        // Draw the particle
+        //draw the particle
         ctx.beginPath();
         ctx.arc(particles[i].x, particles[i].y, particles[i].size, 0, Math.PI * 2);
         ctx.closePath();
@@ -124,7 +119,6 @@ export default function ParticleAnimation() {
     
     animate();
     
-    // Event listeners with safe checks
     const handleResize = () => {
       updateCanvasSize();
       createTextParticles();
@@ -152,13 +146,11 @@ export default function ParticleAnimation() {
       }
     };
     
-    // Add event listeners
     window.addEventListener('resize', handleResize);
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseleave', handleMouseLeave);
     document.addEventListener('touchmove', handleTouchMove, { passive: false });
     
-    // Cleanup
     return () => {
       window.removeEventListener('resize', handleResize);
       document.removeEventListener('mousemove', handleMouseMove);

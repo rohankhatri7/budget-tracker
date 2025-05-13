@@ -3,6 +3,7 @@ import { OverviewQuerySchema } from "@/schema/overview";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
+//GET returns monthly income/expense
 export async function GET(request: Request) {
   const user = await currentUser();
   if (!user) {
@@ -31,7 +32,7 @@ export async function GET(request: Request) {
     );
   }
 
-  try {
+  try { //generate monthly income/expense
     const stats = await getMonthlyStats(user.id, queryParams.data.from, queryParams.data.to);
     return Response.json(stats);
   } catch (error) {
@@ -46,14 +47,13 @@ export async function GET(request: Request) {
 
 export type GetMonthlyStatsResponseType = Awaited<ReturnType<typeof getMonthlyStats>>;
 
-async function getMonthlyStats(userId: string, from: Date, to: Date) {
+async function getMonthlyStats(userId: string, from: Date, to: Date) { //normalize dates for full days
   const fromDate = new Date(from);
   const toDate = new Date(to);
-
   fromDate.setHours(0, 0, 0, 0);
   toDate.setHours(23, 59, 59, 999);
 
-  // Get all transactions within the date range
+  //get all transactions within the date range
   const transactions = await prisma.transaction.findMany({
     where: {
       userId,
@@ -69,7 +69,7 @@ async function getMonthlyStats(userId: string, from: Date, to: Date) {
     },
   });
 
-  // Group transactions by month and year
+  //group transactions by month and year
   const monthlyStats = new Map<string, { income: number; expense: number }>();
 
   transactions.forEach(transaction => {
@@ -89,7 +89,7 @@ async function getMonthlyStats(userId: string, from: Date, to: Date) {
     }
   });
 
-  // Convert to array format
+  //convert map to array for JSON
   return Array.from(monthlyStats.entries()).map(([month, stats]) => ({
     month,
     income: stats.income,

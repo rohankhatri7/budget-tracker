@@ -10,14 +10,14 @@ interface DateRange {
 }
 
 const defaultDateRange: DateRange = {
-  from: subMonths(new Date(), 2),  // Show last 3 months
+  from: subMonths(new Date(), 2),  // default last 3 months
   to: new Date()
 };
 
+//hook for global date range with localStorage + React Query
 export function useDateRange() {
   const queryClient = useQueryClient();
-
-  const { data: dateRange = defaultDateRange } = useQuery<DateRange>({
+  const { data: dateRange = defaultDateRange } = useQuery<DateRange>({ //load date range
     queryKey: [DATE_RANGE_KEY],
     queryFn: () => {
       if (typeof window === 'undefined') {
@@ -31,7 +31,7 @@ export function useDateRange() {
           const from = new Date(parsed.from);
           const to = new Date(parsed.to);
           
-          // Validate the dates
+          //validate the dates
           if (isNaN(from.getTime()) || isNaN(to.getTime())) {
             throw new Error('Invalid date format');
           }
@@ -39,16 +39,17 @@ export function useDateRange() {
           return { from, to };
         } catch (e) {
           console.error('Failed to parse saved date range:', e);
-          localStorage.removeItem(STORAGE_KEY); // Remove invalid data
+          localStorage.removeItem(STORAGE_KEY); //remove invalid data
           return defaultDateRange;
         }
       }
       return defaultDateRange;
     },
-    staleTime: Infinity,
+    staleTime: Infinity, //dont auto-refetch
     initialData: defaultDateRange
   });
 
+  //save new date
   const setDateRange = (newRange: DateRange) => {
     if (typeof window !== 'undefined') {
       try {
@@ -61,7 +62,7 @@ export function useDateRange() {
         console.error('Failed to save date range to localStorage:', e);
       }
     }
-    queryClient.setQueryData([DATE_RANGE_KEY], newRange);
+    queryClient.setQueryData([DATE_RANGE_KEY], newRange); //update local cache
   };
 
   return {

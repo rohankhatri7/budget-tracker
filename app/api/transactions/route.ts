@@ -40,7 +40,7 @@ export async function GET(request: Request) {
       type
     });
 
-    // Create proper date objects and set time to beginning and end of day
+    //convert date strings to Objects and normalize
     const fromDate = new Date(from);
     const toDate = new Date(to);
     
@@ -52,6 +52,7 @@ export async function GET(request: Request) {
       toDate: toDate.toISOString()
     });
 
+    //Prisma query filters
     const whereClause = {
       userId,
       date: {
@@ -64,6 +65,7 @@ export async function GET(request: Request) {
     
     console.log("Transactions API - using where clause:", JSON.stringify(whereClause, null, 2));
 
+    //query and return matching transactions in desc order
     const transactions = await prisma.transaction.findMany({
       where: whereClause,
       orderBy: {

@@ -18,11 +18,9 @@ export async function GET(request: Request) {
     return Response.json({ error: "Missing date parameters" }, { status: 400 });
   }
 
-  try {
+  try { //normalize dates
     const fromDate = new Date(from);
     const toDate = new Date(to);
-
-    // Set the time to the beginning and end of the day
     fromDate.setHours(0, 0, 0, 0);
     toDate.setHours(23, 59, 59, 999);
 
@@ -38,8 +36,7 @@ export async function GET(request: Request) {
   }
 }
 
-async function getCategoriesStats(userId: string, from: Date, to: Date) {
-  // First get all categories for the user
+async function getCategoriesStats(userId: string, from: Date, to: Date) { //get all categories belonging to user
   const categories = await prisma.category.findMany({
     where: {
       userId,
@@ -51,7 +48,7 @@ async function getCategoriesStats(userId: string, from: Date, to: Date) {
     },
   });
 
-  // Then get transaction stats
+  //get transaction stats
   const transactionStats = await prisma.transaction.groupBy({
     by: ["category", "categoryIcon", "type"],
     where: {
@@ -66,7 +63,7 @@ async function getCategoriesStats(userId: string, from: Date, to: Date) {
     },
   });
 
-  // Combine categories with transaction stats, showing 0 for categories without transactions
+  //combine categories with transactions, show 0 for categories without transactions
   return categories.map(category => ({
     category: category.name,
     categoryIcon: category.icon,

@@ -4,6 +4,7 @@ import { ThemeProvider } from "next-themes";
 import { Providers } from "./providers";
 import { Toaster } from "sonner";
 
+//apply to whole app
 export default function RootLayout({
   children,
 }: {

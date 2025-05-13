@@ -2,6 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import React, { ReactNode } from "react";
 
+//wrap in a Skeleton loader while data is loading
 function SkeletonWrapper({
   children,
   isLoading,
@@ -11,6 +12,7 @@ function SkeletonWrapper({
   isLoading: boolean;
   fullWidth?: boolean;
 }) {
+  //if not loading just render
   if (!isLoading) return children;
 
   return (

@@ -1,7 +1,8 @@
 import { Currencies } from "./currencies";
 
+//convert local date to UTC object to avoid issue of TIMEZONES
 export function DatetoUTCDate(date: Date) {
-    // Restore original implementation to preserve existing functionality
+    //treat date as UTC
     return new Date(
         Date.UTC(
             date.getFullYear(),
@@ -15,12 +16,9 @@ export function DatetoUTCDate(date: Date) {
     );
 }
 
-// Function to preserve the exact date when displaying in UI
+//preserve the exact date when displaying in UI
 export function preserveDateWithoutTimezone(dateInput: Date | string) {
-    // Create a new date using only the year, month, and day parts
-    // to avoid timezone-related shifts
     const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
-    
     return new Date(
         date.getUTCFullYear(), 
         date.getUTCMonth(), 
@@ -28,6 +26,7 @@ export function preserveDateWithoutTimezone(dateInput: Date | string) {
     );
 }
 
+//return currency formatter
 export function GetFormatterForCurrency(currency: string) {
     const locale = Currencies.find((c) => c.value === currency)?.locale;
   
