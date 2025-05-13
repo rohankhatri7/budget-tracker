@@ -25,11 +25,12 @@ export function CurrencyComboBox() {
     null
   )
 
-  const userSettings = useQuery<UserSettings>({
+  const userSettings = useQuery<UserSettings>({ //fetch user's currency settings from backend
     queryKey: ["userSettings"], 
     queryFn: () => fetch("/api/user-settings").then(res => res.json()),
   });
 
+  //find and set user's saved currency
   React.useEffect(() => {
     if (!userSettings.data) return;
   
@@ -40,6 +41,7 @@ export function CurrencyComboBox() {
     if (userCurrency) setSelectedOption(userCurrency);
   }, [userSettings.data]);
   
+  //update currency on server
   const mutation = useMutation({
     mutationFn: UpdateUserCurrency,
     onSuccess: (data: UserSettings) => {
@@ -59,7 +61,7 @@ export function CurrencyComboBox() {
   });
 
   const selectOption = React.useCallback((currency: Currency | null) => {
-    // avoid rendering problems with callback
+    //avoid rendering problems with callback
     if (!currency) {
       toast.error("Please select a currency");
       return;
@@ -90,6 +92,7 @@ export function CurrencyComboBox() {
     )
   }
 
+  //mobile ui
   return (
     <SkeletonWrapper isLoading={userSettings.isFetching}>
     <Drawer open={open} onOpenChange={setOpen}>
@@ -108,6 +111,7 @@ export function CurrencyComboBox() {
   )
 }
 
+//dropdown list of all currencies
 function OptionList ({
   setOpen,
   setSelectedOption,

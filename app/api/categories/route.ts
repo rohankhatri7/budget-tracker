@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { z } from "zod";
 import { TransactionType } from "@/lib/types";
 
+//handle GET requests for fetching user categories
 export async function GET(request: Request) {
   try {
     const session = await auth();
