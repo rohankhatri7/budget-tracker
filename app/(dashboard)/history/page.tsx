@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import HistoryClient from "./_components/HistoryClient";
 
-export const dynamic = "force-dynamic";
+export const dynamic = "force-dynamic"; //no caching
 
 async function HistoryPage() {
   const user = await currentUser();
@@ -18,7 +18,7 @@ async function HistoryPage() {
   });
 
   if (!userSettings) {
-    redirect("/wizard");
+    redirect("/wizard"); //redirect if user did not complete initial setup
   }
 
   return (

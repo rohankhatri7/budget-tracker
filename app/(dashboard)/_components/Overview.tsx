@@ -11,7 +11,7 @@ import CategoriesStats from "./CategoriesStats"
 import { useDateRange } from "@/lib/hooks/useDateRange"
 
 function Overview({ userSettings }: { userSettings: UserSettings }) {
-  const { dateRange, setDateRange } = useDateRange();
+  const { dateRange, setDateRange } = useDateRange(); //global date range state
 
   const handleDateChange = useCallback((values: { range: { from: Date; to: Date | undefined } }) => {
     if (!values.range.from || !values.range.to) {
@@ -20,6 +20,7 @@ function Overview({ userSettings }: { userSettings: UserSettings }) {
     }
 
     const daysDifference = differenceInDays(values.range.to, values.range.from)
+    //reject if range too long or invalid, which goes to a year
     if (daysDifference > MAX_DATE_RANGE_DAYS) {
       toast.error(`Maximum date range is ${MAX_DATE_RANGE_DAYS} days`)
       return
@@ -30,6 +31,7 @@ function Overview({ userSettings }: { userSettings: UserSettings }) {
       return
     }
 
+    //update date range
     setDateRange({
       from: values.range.from,
       to: values.range.to,

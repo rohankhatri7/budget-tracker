@@ -43,6 +43,7 @@ function HistoryClient({ userSettings }: Props) {
     return GetFormatterForCurrency(userSettings.currency);
   }, [userSettings.currency]);
 
+  //fetch category stats to be used in pie chart
   const { data: categoryData } = useQuery<GetCategoriesStatsResponseType>({
     queryKey: ["history", "categories", dateRange.from, dateRange.to],
     queryFn: () =>
@@ -51,6 +52,7 @@ function HistoryClient({ userSettings }: Props) {
       ).then((res) => res.json()),
   });
 
+  //fetch category stats to be used in bar chart
   const { data: monthlyData } = useQuery<GetMonthlyStatsResponseType>({
     queryKey: ["history", "monthly", dateRange.from, dateRange.to],
     queryFn: () =>
@@ -61,7 +63,7 @@ function HistoryClient({ userSettings }: Props) {
 
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-  // Create base data with all months initialized to 0
+  //set all months to 0 default
   const baseMonthlyData = useMemo(() => monthNames.map(month => ({
     month,
     income: 0,
@@ -74,15 +76,15 @@ function HistoryClient({ userSettings }: Props) {
     return baseMonthlyData.map(baseMonth => {
       const monthIndex = monthNames.indexOf(baseMonth.month);
       
-      // Create dates for comparison using the first and last day of each month
+      
       const startOfCurrentMonth = new Date(dateRange.from.getFullYear(), monthIndex, 1);
       const endOfCurrentMonth = new Date(dateRange.from.getFullYear(), monthIndex + 1, 0);
       
-      // Create dates for the selected range
+      //create dates for the selected range
       const startOfRange = new Date(dateRange.from.getFullYear(), dateRange.from.getMonth(), 1);
       const endOfRange = new Date(dateRange.to.getFullYear(), dateRange.to.getMonth() + 1, 0);
 
-      // A month should be shown if it falls completely within the selected range
+      //show month if month is in range
       const isInRange = (
         startOfCurrentMonth.getTime() >= startOfRange.getTime() &&
         endOfCurrentMonth.getTime() <= endOfRange.getTime()
@@ -103,40 +105,38 @@ function HistoryClient({ userSettings }: Props) {
     }).filter(Boolean);
   }, [monthlyData, dateRange, monthNames]);
 
-  // Filter category data based on date range
+  //filter category data based on date range
   const filteredCategoryData = useMemo(() => {
     if (!categoryData) return [];
     
-    // For pie charts, we want to show all data within the selected range
-    // The API should already filter by date range, so we use all data
     return categoryData;
   }, [categoryData]);
 
+  //split pie chart by data type
   const incomeData = filteredCategoryData.filter((d) => d.type === "income") || [];
   const expenseData = filteredCategoryData.filter((d) => d.type === "expense") || [];
 
   const COLORS = [
-    '#0088FE', // Blue
-    '#00C49F', // Green
-    '#FFBB28', // Yellow
-    '#FF8042', // Orange
-    '#8884d8', // Purple
-    '#82ca9d', // Light Green
-    '#ffc658', // Light Orange
-    '#8dd1e1', // Light Blue
-    '#a4de6c', // Lime
-    '#d0ed57'  // Yellow Green
+    '#0088FE', //blue
+    '#00C49F', //green
+    '#FFBB28', //yellow
+    '#FF8042', //orange
+    '#8884d8', //purple
+    '#82ca9d', //light Green
+    '#ffc658', //light Orange
+    '#8dd1e1', //light Blue
+    '#a4de6c', //lime
+    '#d0ed57'  //yellow Green
   ];
 
   const CustomPieTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const value = payload[0].value;
-      // Calculate total amount for this category type (income or expense)
       const total = payload[0].payload.type === "income" 
         ? incomeData.reduce((acc, curr) => acc + (curr._sum?.amount || 0), 0)
         : expenseData.reduce((acc, curr) => acc + (curr._sum?.amount || 0), 0);
       
-      // Only show percentage if total is greater than 0
+      //only show percentage if total is greater than 0
       const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : "0.0";
       
       return (

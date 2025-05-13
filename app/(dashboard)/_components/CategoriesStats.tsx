@@ -15,6 +15,7 @@ interface Props {
   to: Date;
 }
 
+//stats cards for incomes and expenses on DASHBOARD
 function CategoriesStats({ userSettings, from, to }: Props) {
   const statsQuery = useQuery<GetCategoriesStatsResponseType>({
     queryKey: ["overview", "stats", "categories", from, to],
@@ -27,6 +28,7 @@ function CategoriesStats({ userSettings, from, to }: Props) {
     refetchOnMount: true,
   });
 
+  //currency formatter based on user selection
   const formatter = useMemo(() => {
     return GetFormatterForCurrency(userSettings.currency);
   }, [userSettings.currency]);
@@ -50,7 +52,7 @@ function CategoriesStats({ userSettings, from, to }: Props) {
     </div>
   );
 }
-
+//card displays category breakdown
 function CategoriesCard({
   data,
   type,
@@ -62,7 +64,7 @@ function CategoriesCard({
 }) {
   const filteredData = data
     .filter((el) => el.type === type)
-    .sort((a, b) => (b._sum?.amount || 0) - (a._sum?.amount || 0));
+    .sort((a, b) => (b._sum?.amount || 0) - (a._sum?.amount || 0)); //sort amount descending
 
   const total = filteredData.reduce(
     (acc, el) => acc + (el._sum?.amount || 0),
@@ -73,30 +75,25 @@ function CategoriesCard({
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
 
-  // Handle mouse movement over the card
+  //mouse movement around the card
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current) return;
     
-    // Get card dimensions and position
     const rect = cardRef.current.getBoundingClientRect();
-    
-    // Calculate mouse position relative to the card center
+
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    
-    // Calculate rotation (max 8 degrees in each direction)
+ 
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
-    
-    // Calculate rotation based on mouse position
-    // Further from center = more rotation
+
     const rotateY = ((x - centerX) / centerX) * 8;
     const rotateX = ((centerY - y) / centerY) * 8;
     
     setRotation({ x: rotateX, y: rotateY });
   };
 
-  // Reset rotation when mouse leaves
+  //return card to default when mouse leaves card area
   const handleMouseLeave = () => {
     setIsHovering(false);
     setRotation({ x: 0, y: 0 });

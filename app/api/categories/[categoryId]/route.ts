@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
 
+//delete user category using composite key
 export async function DELETE(
-  req: Request,
+  req: Request, 
   { params }: { params: { categoryId: string } }
 ) {
   try {
@@ -12,13 +13,12 @@ export async function DELETE(
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    // Parse the categoryId which should be in format "name|type"
+    //parse the categoryId which should be in format "name|type"
     const [name, type] = params.categoryId.split("|");
     if (!name || !type) {
       return new NextResponse("Invalid category ID format", { status: 400 });
     }
 
-    // Delete the category using the composite key
     await prisma.category.delete({
       where: {
         name_userId_type: {

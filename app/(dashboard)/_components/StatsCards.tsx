@@ -16,7 +16,7 @@ interface Props {
   to: Date
   userSettings: UserSettings
 }
-
+//fetch total income, expense and balance for the date range
 function StatsCards({ from, to, userSettings }: Props) {
   const formatter = useMemo(() => {
     return GetFormatterForCurrency(userSettings.currency)
@@ -50,6 +50,7 @@ function StatsCards({ from, to, userSettings }: Props) {
   const expense = data?.expense || 0
   const balance = income - expense
 
+  //render the 3 cards
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 px-6 mb-4">
       <SkeletonWrapper isLoading={isLoading}>
@@ -100,36 +101,27 @@ const StatCard = ({
   const [rotation, setRotation] = useState({ x: 0, y: 0 })
   const [isHovering, setIsHovering] = useState(false)
 
-  // Handle mouse movement over the card
+  // tilting effect
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current) return
-    
-    // Get card dimensions and position
     const rect = cardRef.current.getBoundingClientRect()
-    
-    // Calculate mouse position relative to the card center
     const x = e.clientX - rect.left
     const y = e.clientY - rect.top
-    
-    // Calculate rotation (max 10 degrees in each direction)
     const centerX = rect.width / 2
     const centerY = rect.height / 2
-    
-    // Calculate rotation based on mouse position
-    // Further from center = more rotation
+    //further from center = more rotation
     const rotateY = ((x - centerX) / centerX) * 10
     const rotateX = ((centerY - y) / centerY) * 10
     
     setRotation({ x: rotateX, y: rotateY })
   }
 
-  // Reset rotation when mouse leaves
+  //reset rotation when mouse leaves
   const handleMouseLeave = () => {
     setIsHovering(false)
     setRotation({ x: 0, y: 0 })
   }
-
-  // Set hovering state when mouse enters
+  //set hovering state when mouse enters
   const handleMouseEnter = () => {
     setIsHovering(true)
   }

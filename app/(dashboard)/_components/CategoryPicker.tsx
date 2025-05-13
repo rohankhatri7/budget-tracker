@@ -9,7 +9,7 @@ import CreateCategoryDialog from "./CreateCategoryDialog"
 import { toast } from "sonner"
 
 interface CategoryPickerProps {
-  type: TransactionType
+  type: TransactionType //income or expense
   onChange: (value: string) => void
 }
 
@@ -21,7 +21,7 @@ function CategoryPicker({ type, onChange }: CategoryPickerProps) {
 
   console.log("CategoryPicker rendering with type:", type)
 
-  // Handle clicks outside the dropdown
+  //clicks outside the dropdown
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -35,6 +35,7 @@ function CategoryPicker({ type, onChange }: CategoryPickerProps) {
     }
   }, [])
 
+  //fetch categories for selected transaction type
   const { data: categories, isLoading, error } = useQuery({
     queryKey: ["categories", type],
     queryFn: async () => {
@@ -58,6 +59,7 @@ function CategoryPicker({ type, onChange }: CategoryPickerProps) {
     refetchOnMount: true
   })
 
+  //show toast when there is fetch error
   useEffect(() => {
     if (error) {
       console.error("Error loading categories:", error)
@@ -65,6 +67,7 @@ function CategoryPicker({ type, onChange }: CategoryPickerProps) {
     }
   }, [error])
 
+  //set dropdown menu when a new category is created
   useEffect(() => {
     if (newCategory) {
       console.log("New category created, setting value:", newCategory.name)
@@ -80,7 +83,7 @@ function CategoryPicker({ type, onChange }: CategoryPickerProps) {
     }
   }, [value, onChange])
 
-  // Render a dropdown-style UI manually rather than using Popover
+  //render a dropdown-style UI manually; Popover causes error
   return (
     <div className="relative w-[200px]" ref={dropdownRef}>
       <Button

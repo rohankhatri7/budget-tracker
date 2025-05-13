@@ -28,7 +28,7 @@ import { toast } from "sonner"
 import { DatetoUTCDate } from "@/lib/helpers"
 
 interface Props {
-  trigger: ReactNode
+  trigger: ReactNode //button to open dialog
   type: TransactionType
 }
 
@@ -41,15 +41,15 @@ function CreateTransactionDialog({ trigger, type }: Props) {
     },
   })
 
-  const [open, setOpen] = useState(false)
-  const [datePickerOpen, setDatePickerOpen] = useState(false)
+  const [open, setOpen] = useState(false)// controls dialog visibility
+  const [datePickerOpen, setDatePickerOpen] = useState(false) //controls calendar visibility
   const dateInputRef = useRef<HTMLInputElement>(null);
   const dateCalendarRef = useRef<HTMLDivElement>(null);
 
-  // Close date picker when clicking outside
+  //close date picker when clicking outside
   useEffect(() => {
     function handleOutsideClick(event: MouseEvent) {
-      // If both refs are defined and neither contains the target, close the date picker
+      //if both refs are defined and neither contains the target, close the date picker
       if (
         datePickerOpen &&
         dateInputRef.current &&
@@ -61,10 +61,10 @@ function CreateTransactionDialog({ trigger, type }: Props) {
       }
     }
 
-    // Attach event listener
+    
     document.addEventListener('mousedown', handleOutsideClick);
     
-    // Clean up
+    
     return () => {
       document.removeEventListener('mousedown', handleOutsideClick);
     };
@@ -74,14 +74,14 @@ function CreateTransactionDialog({ trigger, type }: Props) {
     (value: string) => {
       console.log("Category changed to:", value)
       form.setValue("category", value)
-      // Trigger validation after setting the value
+      //trigger validation after setting the value
       form.trigger("category")
     },
     [form],
   )
 
   const queryClient = useQueryClient()
-
+  //create transaction mutation
   const { mutate, isPending } = useMutation({
     mutationFn: CreateTransaction,
     onSuccess: () => {
@@ -97,22 +97,22 @@ function CreateTransactionDialog({ trigger, type }: Props) {
         category: undefined,
       })
 
-      // Invalidate all relevant queries to ensure UI updates
+      //invalidate all relevant queries to ensure UI updates
       queryClient.invalidateQueries({
         queryKey: ["overview"],
       })
 
-      // Also invalidate the stats queries
+      
       queryClient.invalidateQueries({
         queryKey: ["overview-stats"],
       })
 
-      // Invalidate transactions list
+      
       queryClient.invalidateQueries({
         queryKey: ["transactions"],
       })
 
-      // Invalidate analytics queries
+      
       queryClient.invalidateQueries({
         queryKey: ["history", "categories"],
       })
@@ -129,11 +129,12 @@ function CreateTransactionDialog({ trigger, type }: Props) {
     },
   })
 
+  //form submission handler
   const onSubmit = useCallback(
     (values: CreateTransactionSchemaType) => {
       console.log("Form submission values:", values)
       
-      // Additional validation check
+      
       if (!values.category) {
         console.error("Missing category in form submission")
         form.setError("category", {
@@ -151,7 +152,7 @@ function CreateTransactionDialog({ trigger, type }: Props) {
       })
       mutate({
         ...values,
-        date: DatetoUTCDate(values.date),
+        date: DatetoUTCDate(values.date), //UTC formatting
       })
     },
     [mutate, form],
