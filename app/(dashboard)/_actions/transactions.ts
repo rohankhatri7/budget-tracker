@@ -6,20 +6,20 @@ import { currentUser } from "@clerk/nextjs/server"
 import { redirect } from "next/navigation"
 
 export async function CreateTransaction(form: CreateTransactionSchemaType) {
-  const parsedBody = CreateTransactionSchema.safeParse(form)
+  const parsedBody = CreateTransactionSchema.safeParse(form) //validate form input
   if (!parsedBody.success) {
     throw new Error(parsedBody.error.message)
   }
 
   const user = await currentUser()
   if (!user) {
-    redirect("/sign-in")
+    redirect("/sign-in") //make user login
   }
 
   const { amount, category, date, description, type } = parsedBody.data
 
   try {
-    // Confirm the category exists
+    //confirm category exists
     const categoryRow = await prisma.category.findFirst({
       where: {
         userId: user.id,
@@ -31,9 +31,9 @@ export async function CreateTransaction(form: CreateTransactionSchemaType) {
       throw new Error("category not found")
     }
 
-    // Create the transaction & update aggregates in a single transaction
+    //wrap transaction creation + history update in a single db transaction
     await prisma.$transaction([
-      // 1. Create user transaction
+      
       prisma.transaction.create({
         data: {
           userId: user.id,
@@ -46,7 +46,7 @@ export async function CreateTransaction(form: CreateTransactionSchemaType) {
         },
       }),
 
-      // 2. Upsert monthHistory (Composite ID: @@id([day, month, year, userId]))
+      //create or update monthly totals
       prisma.monthHistory.upsert({
         where: {
           day_month_year_userId: {
@@ -70,7 +70,7 @@ export async function CreateTransaction(form: CreateTransactionSchemaType) {
         },
       }),
 
-      // 3. Upsert yearHistory (Composite ID: @@id([month, year, userId]))
+      //create or update yearly totals
       prisma.yearHistory.upsert({
         where: {
           month_year_userId: {
@@ -106,12 +106,11 @@ export async function DeleteTransaction(transactionId: string) {
     redirect("/sign-in");
   }
 
-  try {
-    // First get the transaction to get its details (date, amount, type)
+  try { //fetch transaction to get info in case of rollback
     const transaction = await prisma.transaction.findUnique({
       where: {
         id: transactionId,
-        userId: user.id, // Security check to ensure user owns the transaction
+        userId: user.id, // check user owns the transaction
       },
     });
 
@@ -121,18 +120,18 @@ export async function DeleteTransaction(transactionId: string) {
 
     const { date, amount, type } = transaction;
 
-    // Now perform deletion and update aggregates in a transaction
+    //
     try {
       await prisma.$transaction([
-        // 1. Delete the transaction
+        //delete transaction
         prisma.transaction.delete({
           where: {
             id: transactionId,
-            userId: user.id, // Extra security check
+            userId: user.id,
           },
         }),
 
-        // 2. Update monthHistory (decrement the appropriate amount)
+        //subtract from monthly totals
         prisma.monthHistory.update({
           where: {
             day_month_year_userId: {
@@ -148,7 +147,7 @@ export async function DeleteTransaction(transactionId: string) {
           },
         }),
 
-        // 3. Update yearHistory (decrement the appropriate amount)
+        // subtract from yearly totals
         prisma.yearHistory.update({
           where: {
             month_year_userId: {
@@ -168,10 +167,10 @@ export async function DeleteTransaction(transactionId: string) {
       throw new Error("Failed to delete transaction. Database update error.");
     }
 
-    return { success: true };
+    return { success: true }; //return success if all steps succeed
   } catch (error) {
     console.error("Transaction deletion error:", error);
-    // Make sure we throw an error that can be serialized
+    
     if (error instanceof Error) {
       throw new Error(error.message);
     }

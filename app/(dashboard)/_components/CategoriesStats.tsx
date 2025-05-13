@@ -1,4 +1,4 @@
-"use client";
+"use client"; //client side rendering
 
 import { GetCategoriesStatsResponseType } from '@/app/api/stats/categories/route';
 import SkeletonWrapper from '@/components/SkeletonWrapper';
