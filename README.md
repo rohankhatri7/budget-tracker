@@ -4,7 +4,7 @@ A full‑stack personal finance app built with Next.js, TypeScript, Prisma, Reac
 Users can securely track transactions, visualize spending by category, and view historical trends—all deployed serverlessly on Render.
 
 [View the source on GitHub](https://github.com/rohankhatri7/budget-tracker)  
-**Live Demo:** https://https://budget-tracker-py1o.onrender.com
+**Live Demo:** [https://https://budget-tracker-py1o.onrender.com](https://budget-tracker-py1o.onrender.com)
 
 ---
 
@@ -81,7 +81,7 @@ This project is configured for zero‑config, serverless deployment on Render:
 Connect your GitHub repo to Render as a Web Service.
 Set the same environment variables on Render as in your .env.local.
 Render will auto‑build on each push to main.
-Live Demo: https://https://budget-tracker-py1o.onrender.com
+Live Demo: [https://https://budget-tracker-py1o.onrender.com](https://budget-tracker-py1o.onrender.com)
 
 ## References
 
