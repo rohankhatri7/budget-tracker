@@ -1,36 +1,93 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Budget Tracker
+
+A full‑stack personal finance app built with Next.js, TypeScript, Prisma, React Query, and Tailwind CSS.  
+Users can securely track transactions, visualize spending by category, and view historical trends—all deployed serverlessly on Render.
+
+[View the source on GitHub](https://github.com/rohankhatri7/budget-tracker)  
+**Live Demo:** https://https://budget-tracker-py1o.onrender.com
+
+---
+
+## Features
+
+- **Transaction Management**: Authenticated users can create, read, update, and delete transactions and categories  
+- **Category Statistics**: Real‑time aggregation of spending by category, with bar and pie charts  
+- **Historical Data**: Filterable date ranges to view spending trends over time  
+- **Secure Authentication**: User sign‑up and login via Clerk  
+- **Serverless Deployment**: Automatic builds and scaling on Render  
+
+---
+
+## Tech Stack
+
+- **Framework**: Next.js 14 (App Router + API Routes)  
+- **Language**: TypeScript  
+- **ORM**: Prisma (SQLite locally → PostgreSQL in production)  
+- **Data Fetching**: React Query for caching and synchronization  
+- **Styling**: Tailwind CSS + Shadcn UI  
+- **Auth**: Clerk  
+- **Charts**: Recharts  
+- **Deployment**: Render (serverless, PostgreSQL)  
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
+- Node.js ≥ 18  
+- PostgreSQL (for local development)  
+- A Clerk account (for auth credentials)  
+- A Render account (to view or re-deploy the live app)
+
+### Clone & Install
+
+```bash
+git clone https://github.com/rohankhatri7/budget-tracker.git
+cd budget-tracker
+npm install
+# or
+yarn install
+# or
+pnpm install
+```
+
+## Environment Variables
+```bash
+Create a .env.local in the project root with the following:
+# Database (for production, PostgreSQL; local dev defaults to SQLite)
+DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/budget_db?schema=public"
+
+# Clerk
+CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+CLERK_SECRET_KEY=your_clerk_secret_key
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+```
+
+## Run Locally
 ```bash
 npm run dev
 # or
 yarn dev
 # or
 pnpm dev
-# or
-bun dev
 ```
+Open http://localhost:3000 to explore the app. Changes to app/ pages and API routes are hot‑reloaded.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Deployment
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+This project is configured for zero‑config, serverless deployment on Render:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Connect your GitHub repo to Render as a Web Service.
+Set the same environment variables on Render as in your .env.local.
+Render will auto‑build on each push to main.
+Live Demo: https://https://budget-tracker-py1o.onrender.com
 
-## Learn More
+## References
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **TypeScript Handbook**: https://www.typescriptlang.org/docs
+- **Clerk Authentication Docs**: https://clerk.dev/docs
+- **Next.js API Routes**: https://nextjs.org/docs/api-routes/introduction
+- **Prisma Docs**: https://prisma.io/docs
+- **Recharts Documentation**: https://recharts.org
+- **Render Web Services**: https://render.com/docs/web-services
