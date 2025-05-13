@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
 import { z } from "zod";
 
+//put request for user currency settings
 export async function PUT(req: Request) {
   try {
     const { userId } = await auth();
@@ -20,6 +21,7 @@ export async function PUT(req: Request) {
       return new NextResponse("Invalid request body", { status: 400 });
     }
 
+    //update currency in user settings table
     const { currency } = result.data;
     const userSettings = await prisma.userSettings.update({
       where: {
